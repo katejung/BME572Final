@@ -4,8 +4,8 @@ function [baseline,intense,poststimulus] = compartmentize_JS(filtered,baselinec,
 
 % For this particular project, input is a dataset of column vector (n by m)
 
-datalength = size(data,2);
-numset = size(data,1);
+datalength = size(filtered,2);
+numset = size(filtered,1);
 samplerate = 15000; % Hz
 
 for i = 1:numset
