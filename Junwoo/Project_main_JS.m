@@ -75,3 +75,5 @@ plot(t(samplerate*intensec+1:end-poststimulusc),MHp_poststimulus,linespec{1,:},l
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
 title('MHp filtered data: Post-stimulus',fontsize{1,:})
 fignum = fignum + 1;
+
+

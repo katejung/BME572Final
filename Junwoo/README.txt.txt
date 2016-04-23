@@ -7,7 +7,6 @@ All reference pdf files are also included in the directory.
 
 
 Notes on the scripts:
-
 For filtering, Matlab with 2014a or higher version is required.
 The Compartmentization is done with a-priori knowledge of the stimulus.
 Three compartment is made: baseline, intense and poststimulus.
