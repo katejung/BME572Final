@@ -1,0 +1,5 @@
+Progress log
+
+-4-23-2016: filtering algorithm implemented (Filtering_JS.m)
+-4-23-2016: compartmentization algorithm implemented (compartmentization_JS.m)
+
