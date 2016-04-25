@@ -27,10 +27,12 @@ intensec = 10.6; % Cutoff for the intense section
 poststimulusc = 0; % Cutoff for the post-stimulus section
 
 % Preprocess the data
-[MAp_filtered] = filtering_JS(MAp);
 [MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp_filtered,baselinec,intensec,poststimulusc);
-[MHp_filtered] = filtering_JS(MHp);
+[MAp_baseline] = filtering_JS(MAp_baseline); [MAp_intense] = filtering_JS(MAp_intense); [MAp_poststimulus] = filtering_JS(MAp_poststimulus);
+MAp_filtered = 
 [MHp_baseline,MHp_intense,MHp_poststimulus] = compartmentize_JS(MHp_filtered,baselinec,intensec,poststimulusc);
+[MHp_baseline] = filtering_JS(MHp_baseline); [MHp_intense] = filtering_JS(MHp_intense); [MHp_poststimulus] = filtering_JS(MHp_poststimulus);
+
 
 % Visualize
 fig = figure(fignum); clf(fig)
@@ -77,9 +79,20 @@ fignum = fignum + 1;
 
 %% spike detection
 [pks,locs,peakinterval] = spike_detection_JS(MAp_baseline);
-figure(5)
-plot(t,MAp_baseline);
-plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(locs{i,1}),'*','MarkerFaceColor','r');
+fig = figure(fignum); clf(fig)
+plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(1,:),linespec{1,:},linespec2{1,:});
+hold on
+plot(t(locs{1,1}+samplerate*baselinec),MAp_baseline(1,locs{1,1}),'rs','MarkerFaceColor','r');
+axis([2.03 2.05 -20 20])
+fignum = fignum  +1;
+
+fig = figure(fignum); clf(fig)
+plot(t,MAp(1,:),linespec{1,:},linespec2{1,:});
+axis([2.03 2.05 -65 15])
+fignum = fignum  +1;
+
+
+
 
 
 

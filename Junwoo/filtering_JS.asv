@@ -1,0 +1,33 @@
+function [filtered] = filtering_JS(data)
+% Filter the data as suggested in:
+% http://www.scholarpedia.org/article/Spike_sorting
+% REQUIRE Matlab 2014a or later versions
+
+% For this particular project, input is a dataset of column vector (n by m)
+% Bandpass filter of 300 Hz to 5000Hz is used to remove noise and trend
+%d = designfilt('bandpassfir','FilterOrder',20, ...
+%    'HalfPowerFrequency1',100,'HalfPowerFrequency2',3000, ...
+%    'SampleRate',15000);
+d = designfilt('bandpassfir', 'FilterOrder', 20, ...
+    'CutoffFrequency1',0.4, 'CutoffFrequency2', 0.6, ...
+    'SampleRate', 15000, ...
+    'Window', 'hamming');
+
+datalength = size(data,2);
+numset = size(data,1);
+filtered = zeros(numset,datalength);
+samplerate = 15000; % Hz
+
+for i = 1:numset
+    [p,s,mu] = polyfit((1:datalength),data(i,:),6);
+    trend = polyval(p,(1:datalength),[],mu);
+    filtered(i,:) = data(i,:) - trend;
+    filtered(i,:) = filtfilt(d,filtered(i,:));
+    % Remove the DC-offset
+    filtered(i,:) = filtered(i,:) - mean(filtered(i,:));
+    
+end
+
+
+
+

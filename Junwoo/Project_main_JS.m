@@ -22,19 +22,21 @@ fignum = 1;
 % preprocess parameters
 samplerate = 15000;
 t = 0:(1/samplerate):60; t = t(1:end-1);
-baselinec = 0.01; % Remove first 10ms to remove the unrealistically large spike
-intensec = 10.6; % Cutoff for the intense section
+baselinec = 0; % Remove first 10ms to remove the unrealistically large spike
+intensec = 11; % Cutoff for the intense section
 poststimulusc = 0; % Cutoff for the post-stimulus section
 
 % Preprocess the data
-[MAp_filtered] = filtering_JS(MAp);
-[MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp_filtered,baselinec,intensec,poststimulusc);
-[MHp_filtered] = filtering_JS(MHp);
-[MHp_baseline,MHp_intense,MHp_poststimulus] = compartmentize_JS(MHp_filtered,baselinec,intensec,poststimulusc);
+[MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp,baselinec,intensec,poststimulusc);
+[MAp_baseline] = filtering_JS(MAp_baseline); [MAp_intense] = filtering_JS(MAp_intense); [MAp_poststimulus] = filtering_JS(MAp_poststimulus);
+MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
+[MHp_baseline,MHp_intense,MHp_poststimulus] = compartmentize_JS(MHp,baselinec,intensec,poststimulusc);
+[MHp_baseline] = filtering_JS(MHp_baseline); [MHp_intense] = filtering_JS(MHp_intense); [MHp_poststimulus] = filtering_JS(MHp_poststimulus);
+MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 
 % Visualize
 fig = figure(fignum); clf(fig)
-plot(t,MAp_filtered,linespec{1,:},linespec2{1,:})
+plot(t(1+samplerate*baselinec:end),MAp_filtered,linespec{1,:},linespec2{1,:})
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
 title('MAp filtered data',fontsize{1,:})
 fignum = fignum + 1;
@@ -49,13 +51,13 @@ plot(t(samplerate*10+1:samplerate*intensec),MAp_intense,linespec{1,:},linespec2{
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
 title('MAp filtered data: Intense',fontsize{1,:})
 subplot(3,1,3)
-plot(t(samplerate*10.6+1:end-poststimulusc),MAp_poststimulus,linespec{1,:},linespec2{1,:})
+plot(t(samplerate*intensec+1:end-poststimulusc),MAp_poststimulus,linespec{1,:},linespec2{1,:})
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
 title('MAp filtered data: Post-stimulus',fontsize{1,:})
 fignum = fignum + 1;
 
 fig = figure(fignum); clf(fig)
-plot(t,MHp_filtered,linespec{1,:},linespec2{1,:})
+plot(t(1+samplerate*baselinec:end),MHp_filtered,linespec{1,:},linespec2{1,:})
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
 title('MHp filtered data',fontsize{1,:})
 fignum = fignum + 1;
@@ -77,9 +79,17 @@ fignum = fignum + 1;
 
 %% spike detection
 [pks,locs,peakinterval] = spike_detection_JS(MAp_baseline);
-figure(5)
-plot(t,MAp_baseline);
-plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(locs{1,1}),'*','MarkerFaceColor','r');
+fig = figure(fignum); clf(fig)
+plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(1,:),linespec{1,:},linespec2{1,:});
+hold on
+plot(t(locs{1,1}+samplerate*baselinec),MAp_baseline(1,locs{1,1}),'rs','MarkerFaceColor','r');
+axis([2.03 2.05 -25 50])
+fignum = fignum  +1;
+
+fig = figure(fignum); clf(fig)
+plot(t,MAp(1,:),linespec{1,:},linespec2{1,:});
+axis([2.03 2.05 -65 15])
+fignum = fignum  +1;
 
 
 
