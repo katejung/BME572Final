@@ -17,7 +17,7 @@ for i = 1:numset
      % Reference suggests to use 4*sigma as a threshold.
      threshold = 4*sigma;
      [pks{i,1},locs{i,1}] = findpeaks(input(i,:),'MinPeakHeight',threshold);
-     peakinterval{i,1} = diff(locs{i,1});
+     peakinterval{i,1} = diff(locs{);
 end
 
 

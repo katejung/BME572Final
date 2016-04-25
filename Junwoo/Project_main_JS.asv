@@ -79,10 +79,7 @@ fignum = fignum + 1;
 [pks,locs,peakinterval] = spike_detection_JS(MAp_baseline);
 figure(5)
 plot(t,MAp_baseline);
-plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(locs{1,1}),'*','MarkerFaceColor','r');
-
-
-
+plot(t(1+samplerate*baselinec:samplerate*10),MAp_baseline(locs{i,1}),'*','MarkerFaceColor','r');
 
 
 
