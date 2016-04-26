@@ -23,7 +23,7 @@ fignum = 1;
 samplerate = 15000;
 t = 0:(1/samplerate):60; t = t(1:end-1);
 baselinec = 0; % Remove first 10ms to remove the unrealistically large spike
-intensec = 11; % Cutoff for the intense section
+intensec = 11.5; % Cutoff for the intense section
 poststimulusc = 0; % Cutoff for the post-stimulus section
 
 % Preprocess the data
@@ -89,6 +89,19 @@ fignum = fignum  +1;
 fig = figure(fignum); clf(fig)
 plot(t,MAp(1,:),linespec{1,:},linespec2{1,:});
 axis([2.03 2.05 -65 15])
+fignum = fignum  +1;
+
+[pks,locs,peakinterval] = spike_detection_JS(MAp_poststimulus);
+fig = figure(fignum); clf(fig)
+plot(t(samplerate*intensec+1:end-poststimulusc),MAp_poststimulus(1,:),linespec{1,:},linespec2{1,:});
+hold on
+plot(t(locs{1,1}+samplerate*intensec+1),MAp_poststimulus(1,locs{1,1}),'rs','MarkerFaceColor','r');
+% axis([14.98 15 -25 50])
+fignum = fignum  +1;
+
+fig = figure(fignum); clf(fig)
+plot(t,MAp(1,:),linespec{1,:},linespec2{1,:});
+% axis([14.98 15 -370 -340])
 fignum = fignum  +1;
 
 
