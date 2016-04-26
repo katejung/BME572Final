@@ -28,10 +28,10 @@ poststimulusc = 0; % Cutoff for the post-stimulus section
 
 % Preprocess the data
 [MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp,baselinec,intensec,poststimulusc);
-[MAp_baseline] = filtering_JS(MAp_baseline,0,1); [MAp_intense] = filtering_JS(MAp_intense,1,1); [MAp_poststimulus] = filtering_JS(MAp_poststimulus,0,1);
+[MAp_baseline] = filtering_JS(MAp_baseline); [MAp_intense] = filtering_JS(MAp_intense); [MAp_poststimulus] = filtering_JS(MAp_poststimulus);
 MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
 [MHp_baseline,MHp_intense,MHp_poststimulus] = compartmentize_JS(MHp,baselinec,intensec,poststimulusc);
-[MHp_baseline] = filtering_JS(MHp_baseline,0,0); [MHp_intense] = filtering_JS(MHp_intense,1,0); [MHp_poststimulus] = filtering_JS(MHp_poststimulus,0,0);
+[MHp_baseline] = filtering_JS(MHp_baseline); [MHp_intense] = filtering_JS(MHp_intense); [MHp_poststimulus] = filtering_JS(MHp_poststimulus);
 MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 
 % Visualize

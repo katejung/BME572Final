@@ -31,7 +31,7 @@ d2 = designfilt('highpassfir', 'FilterOrder', 20, 'CutoffFrequency', ...
 MAp_singularities = {[1153:1353],[1194:1418],[2391:2499], ...
     [689:824],[1219:1415],[656:826], ...
     [1199:1351],[1220:1397]};
-MHp_singularities = {[4135:4347],[1356:1532],[1268:1374], ...
+MHp_singularities = {[4171:4363],[1356:1532],[1268:1374], ...
     [647:739],[783:924],[892:948], ...
     [1004:1114],[1002:1109]};
 
@@ -62,6 +62,10 @@ for i = 1:numset
         trend = polyval(p,sing(end)+1:datalength,[],mu);
         filtered(i,sing(end)+1:end) = data(i,sing(end)+1:end) - trend;
         
+        % Try to remove remaining trends
+        [p,s,mu] = polyfit((1:datalength),filtered(i,:),1);
+        trend = polyval(p,(1:datalength),[],mu);
+        filtered(i,:) = filtered(i,:) - trend;
     else
         % Remove additional trends with polynomial approximation
         [p,s,mu] = polyfit((1:datalength),data(i,:),10);
