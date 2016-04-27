@@ -34,7 +34,7 @@ MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
 [MHp_baseline] = filtering_JS(MHp_baseline,0,0); [MHp_intense] = filtering_JS(MHp_intense,1,0); [MHp_poststimulus] = filtering_JS(MHp_poststimulus,0,0);
 MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 
-% Visualize
+%% Visualize
 fig = figure(fignum); clf(fig)
 plot(t(1+samplerate*baselinec:end),MAp_filtered,linespec{1,:},linespec2{1,:})
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
