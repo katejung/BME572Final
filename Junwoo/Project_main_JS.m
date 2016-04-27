@@ -87,6 +87,10 @@ axis([2.03 2.05 -25 50])
 fignum = fignum  +1;
 
 fig = figure(fignum); clf(fig)
+hist(peakinterval{1,1},20)
+fignum = fignum  +1;
+
+fig = figure(fignum); clf(fig)
 plot(t,MAp(1,:),linespec{1,:},linespec2{1,:});
 axis([2.03 2.05 -65 15])
 fignum = fignum  +1;

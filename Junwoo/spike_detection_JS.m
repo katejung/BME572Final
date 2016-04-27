@@ -10,13 +10,22 @@ function [pks,locs,peakinterval] = spike_detection_JS(input)
 
 datalength = size(input,2);
 numset = size(input,1);
+samplerate = 15000; % Hz
 
+% The reasonable peak distance is roughly 2 ms
+peakdistance = samplerate*(2e-3);
+
+% The reasonable peak width is roughly 1 ms
+peakwidth = samplerate*(1e-3);
 for i = 1:numset
     % Signma is an estimate of the standard deviation of background noise
-     sigma = median(abs(input(i,:))/0.6745);
+     sigma = median(abs(input(i,:)));
      % Reference suggests to use 4*sigma as a threshold.
-     threshold = 4*sigma;
-     [pks{i,1},locs{i,1}] = findpeaks(input(i,:),'MinPeakHeight',threshold);
+     threshold = 3*sigma;
+     [pks{i,1},locs{i,1}] = findpeaks(input(i,:),'MinPeakHeight',threshold, ...
+                                      'MinPeakDistance',peakdistance, ...
+                                      'MinPeakWidth',peakwidth, ...
+                                      'MinPeakProminence',threshold);
      peakinterval{i,1} = diff(locs{i,1});
 end
 
