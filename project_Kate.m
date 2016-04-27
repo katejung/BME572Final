@@ -84,83 +84,8 @@ MAp_train = MAp_baseline(1:4,:);
 plot(MAp_train(1,:));
 
 %% min max feature
-arrayLength= size(MAp_train, 2);
-numset = size(MAp_train, 1);
-troughsArrayA = [];
-troughsTimeLocA = [];
-windowLength = 500;
 
-for i= 1:numset
-    peaksArrayA = [];
-    peaksTimeLocA = [];
-    dataMedian = median(abs(MAp_train(i,:))/0.6745);
-    threshold = 4*dataMedian;
-    %     for k = 1:round(arrayLength/windowLength)
-    %         startIndex = (k-1)*windowLength;
-    %         dataWindow = MAp_train(i,startIndex+1:startIndex+windowLength);
-    %         sigma = median(abs(dataWindow)/0.6745);
-    %         threshold = 2*sigma;
-    %         [peaksInWindow,peaksTimeInWindow] = findpeaks(MAp_train(i,:),'MinPeakHeight',threshold);
-    %         peaksArray = [peaksArray peaksInWindow];
-    %         peaksTimeLoc = [peaksTimeLoc peaksTimeInWindow+startIndex];
-    %     end
-    [peaksArrayA,peaksTimeLocA] = findpeaks(MAp_train(i,:),'MinPeakHeight',threshold);
-    numPeaks = size(peaksArrayA,2);
-    troughsArrayA = [];
-    troughsTimeLocA = [];
-    for j = 1:numPeaks
-        
-        peakTime = peaksTimeLocA(j);
-        [M,I] = min(MAp_train(i, peakTime:min([peakTime+30, size(MAp_train(i,:),2)])));
-        troughsArrayA = [troughsArrayA M];
-        troughsTimeLocA = [troughsTimeLocA peakTime+I];
-    end
-    peakinterval{i,1} = diff(peaksTimeLocA);
-    peaksArrayB = [];
-    peaksTimeLocB= [];
-    for m = 1:numPeaks-1
-        peakintervalArray = peakinterval{i,1};
-        if peakintervalArray(1,m) > 500
-            startIndex = peaksTimeLocA(m)+150;
-            endIndex = peaksTimeLocA(m+1)-50;
-            sigma = median(abs(MAp_train(i,startIndex:endIndex))/0.6745);
-            thresholdB = 3.5*sigma;
-            [p,t] = findpeaks(MAp_train(i,startIndex:endIndex),'MinPeakHeight',thresholdB);
-            peaksArrayB =[peaksArrayB p];
-            peaksTimeLocB = [peaksTimeLocB t+startIndex];
-        end
-        
-    end
-    troughsArrayB = [];
-    troughsTimeLocB = [];
-    for l = 1:size(peaksArrayB,2)
-        peakTime = peaksTimeLocB(l);
-        [M,I] = min(MAp_train(i, peakTime:min([peakTime+30, size(MAp_train(i,:),2)])));
-        troughsArrayB = [troughsArrayB M];
-        troughsTimeLocB = [troughsTimeLocB peakTime+I];
-    end
-    peaksA{i,1} = peaksArrayA;
-    peakLocA{i,1} = peaksTimeLocA;
-    peaksB{i,1} = peaksArrayB;
-    peakLocB{i,1} = peaksTimeLocB;
-    troughsB{i,1} = troughsArrayB;
-    troughLocB{i,1} = troughsTimeLocB;
-    troughsA{i,1} = troughsArrayA;
-    troughLocA{i,1} = troughsTimeLocA;
-end
-figure
-plot(MAp_train(1,:));
-hold on
-plot( peakLocA{1,1},peaksA{1,1}, 'ro')
-hold on
-plot(troughLocA{1,1}, troughsA{1,1},'bo')
-hold on
-plot(peakLocB{1,1}, peaksB{1,1}, 'mo')
-hold on
-plot(troughLocB{1,1}, troughsB{1,1},'go')
-hold on
-
-%%
+[peaks, troughs,  peakT, troughT] = extractFeatures_threshold(MAp_train)
 figure
 peaks = [];
 troughs = [];
@@ -173,123 +98,22 @@ xlabel('Spike Minimum (\muV)')
 ylabel('Spike Maximum (\muV)')
 title('Cluster Maximum vs. Minimum using threshold voltage')
 
-%% min max feature
-clearvars peaks troughs peaksArray
-arrayLength= size(MAp_train, 2);
-numset = size(MAp_train, 1);
-troughsArrayA = [];
-troughsTimeLocA = [];
-windowLength = 500;
-
-for i= 1:numset
-    heightThreshold = 7;
-    validPeak = [];
-    validPeakLoc = [];
-    validTrough =[];
-    validTroughLoc = [];
-    peaksArray = [];
-    peaksTimeLoc = [];
-    dataMedian = median(abs(MAp_train(i,:))/0.6745);
-    threshold = 1.5*dataMedian;
-    
-    [peaksArray, peaksTimeLoc] = findpeaks(MAp_train(i,:),'MinPeakHeight',threshold);
-    numPeaks = size(peaksArray,2);
-    
-    numPeaks = size(peaksArray,2);
-    troughsArray = [];
-    troughsTimeLoc = [];
-    for j = 1:numPeaks
-        peakTime = peaksTimeLoc(j);
-        [M,I] = min(MAp_train(i, peakTime:min([peakTime+40, size(MAp_train(i,:),2)])));
-        troughsArray = [troughsArray M];
-        troughsTimeLoc = [troughsTimeLoc peakTime+I];
-    end
-    
-    
-    validIndices = zeros(1, numPeaks);
-    for j = 1:numPeaks
-        if peaksArray(j) - troughsArray(j) > heightThreshold
-            validIndices(j) = 1;
-            validPeak = [validPeak peaksArray(j)];
-            validPeakLoc = [validPeakLoc peaksTimeLoc(j)];
-            validTrough = [validTrough troughsArray(j)];
-            validTroughLoc = [validTroughLoc troughsTimeLoc(j)];
-        end
-    end
-    
-    % check if A spike gave false positive
-    pTemp = [];
-    tTemp = [];
-    trTemp = [];
-    ttrTemp = [];
-    
-    
-    for a = 1:size(validPeak,2)
-        keep = true;
-        if (validPeak(a) < 4*dataMedian)
-            data = MAp_train(i,:);
-            time = validPeakLoc(a);
-            for b = time:min([time+50 arrayLength])
-                if data(b) > 7*dataMedian
-                    keep = false;               
-                end
-            end
-        end
-        if keep
-            pTemp = [pTemp validPeak(a)];
-            tTemp = [tTemp validPeakLoc(a)];
-            trTemp = [trTemp validTrough(a)];
-            ttrTemp = [ttrTemp validTroughLoc(a)];
-        end
-    end
-    validPeak = pTemp;
-    validPeakLoc = tTemp;
-    validTrough = trTemp;
-    validTroughLoc = ttrTemp;
-    
-    peakinterval{i,1} = diff(peaksTimeLoc);
-    peaks{i,1} = peaksArray;
-    peaksLoc{i,1} = peaksTimeLoc;
-    troughs{i,1} = troughsArray;
-    troughsLoc{i,1} = troughsTimeLoc;
-    validIndicesCell{i,1} = validIndices;
-    validPeakCell{i,1} = validPeak;
-    validPeakLocCell{i,1}= validPeakLoc;
-    validTroughCell{i,1} = validTrough;
-    validTroughLocCell{i,1} = validTroughLoc;
-end
-figure
-plot(MAp_train(1,:));
-hold on
-plot( validPeakLocCell{1,1},validPeakCell{1,1}, 'ro')
-hold on
-plot(validTroughLocCell{1,1}, validTroughCell{1,1}, 'mo')
-
-%%
-clearvars peaks troughs
-figure
-peaks = [];
-troughs = [];
-peakT = [];
-troughT = [];
-for i = 1:numset
-    peaks = [peaks validPeakCell{i,1}];
-    troughs = [troughs validTroughCell{i,1}];
-    peakT = [peakT validPeakLocCell{i,1}];
-    troughT = [troughT validTroughLocCell{i,1}];
-end
-scatter(troughs,peaks)
-xlabel('Spike Minimum (\muV)')
-ylabel('Spike Maximum (\muV)')
-title('Cluster Maximum vs. Minimum using threshold voltage height')
-
+%% height
+[peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
 num = size(peaks,2);
 for j = 1:num
    heights(j) = peaks(j)-troughs(j);
    widths(j) = troughT(j)-peakT(j);
 end
+
+scatter(troughs,peaks)
+xlabel('Spike Minimum (\muV)')
+ylabel('Spike Maximum (\muV)')
+title('Cluster Maximum vs. Minimum using threshold voltage height')
+
 figure 
 for k = 1:num
+     dataMedian = median(abs(MAp_train(1:4,:))/0.6745);
     if peaks(k) > 7*dataMedian
         plot(widths(k), heights(k), 'ro')
     else
@@ -297,140 +121,7 @@ for k = 1:num
     end
     hold on
 end
-xlabel('spike width')
-ylabel('spike height')
-title('Cluster height vs. width using threshold voltage height')
-%%
-Fs  = 15000;
-t_pc = t(samplerate*30+1:end-poststimulusc);
 
-MAp_train = MAp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
-plot(MAp_train(1,:));
-%% min max feature
-clearvars peaks troughs peaksArray
-arrayLength= size(MAp_train, 2);
-numset = size(MAp_train, 1);
-troughsArrayA = [];
-troughsTimeLocA = [];
-windowLength = 500;
-
-for i= 1:numset
-    heightThreshold = 7;
-    validPeak = [];
-    validPeakLoc = [];
-    validTrough =[];
-    validTroughLoc = [];
-    peaksArray = [];
-    peaksTimeLoc = [];
-    dataMedian = median(abs(MAp_train(i,:))/0.6745);
-    threshold = 1.5*dataMedian;
-    
-    [peaksArray, peaksTimeLoc] = findpeaks(MAp_train(i,:),'MinPeakHeight',threshold);
-    numPeaks = size(peaksArray,2);
-    
-    numPeaks = size(peaksArray,2);
-    troughsArray = [];
-    troughsTimeLoc = [];
-    for j = 1:numPeaks
-        peakTime = peaksTimeLoc(j);
-        [M,I] = min(MAp_train(i, peakTime:min([peakTime+40, size(MAp_train(i,:),2)])));
-        troughsArray = [troughsArray M];
-        troughsTimeLoc = [troughsTimeLoc peakTime+I];
-    end
-    
-    
-    validIndices = zeros(1, numPeaks);
-    for j = 1:numPeaks
-        if peaksArray(j) - troughsArray(j) > heightThreshold
-            validIndices(j) = 1;
-            validPeak = [validPeak peaksArray(j)];
-            validPeakLoc = [validPeakLoc peaksTimeLoc(j)];
-            validTrough = [validTrough troughsArray(j)];
-            validTroughLoc = [validTroughLoc troughsTimeLoc(j)];
-        end
-    end
-    
-    % check if A spike gave false positive
-    pTemp = [];
-    tTemp = [];
-    trTemp = [];
-    ttrTemp = [];
-    
-    
-    for a = 1:size(validPeak,2)
-        keep = true;
-        if (validPeak(a) < 4*dataMedian)
-            data = MAp_train(i,:);
-            time = validPeakLoc(a);
-            for b = time:min([time+50 arrayLength])
-                if data(b) > 7*dataMedian
-                    keep = false;               
-                end
-            end
-        end
-        if keep
-            pTemp = [pTemp validPeak(a)];
-            tTemp = [tTemp validPeakLoc(a)];
-            trTemp = [trTemp validTrough(a)];
-            ttrTemp = [ttrTemp validTroughLoc(a)];
-        end
-    end
-    validPeak = pTemp;
-    validPeakLoc = tTemp;
-    validTrough = trTemp;
-    validTroughLoc = ttrTemp;
-    
-    peakinterval{i,1} = diff(peaksTimeLoc);
-    peaks{i,1} = peaksArray;
-    peaksLoc{i,1} = peaksTimeLoc;
-    troughs{i,1} = troughsArray;
-    troughsLoc{i,1} = troughsTimeLoc;
-    validIndicesCell{i,1} = validIndices;
-    validPeakCell{i,1} = validPeak;
-    validPeakLocCell{i,1}= validPeakLoc;
-    validTroughCell{i,1} = validTrough;
-    validTroughLocCell{i,1} = validTroughLoc;
-end
-%%
-figure
-plot(MAp_train(1,:));
-hold on
-plot( validPeakLocCell{1,1},validPeakCell{1,1}, 'ro')
-hold on
-plot(validTroughLocCell{1,1}, validTroughCell{1,1}, 'mo')
-
-%%
-clearvars peaks troughs
-figure
-peaks = [];
-troughs = [];
-peakT = [];
-troughT = [];
-for i = 1:numset
-    peaks = [peaks validPeakCell{i,1}];
-    troughs = [troughs validTroughCell{i,1}];
-    peakT = [peakT validPeakLocCell{i,1}];
-    troughT = [troughT validTroughLocCell{i,1}];
-end
-scatter(troughs,peaks)
-xlabel('Spike Minimum (\muV)')
-ylabel('Spike Maximum (\muV)')
-title('Cluster Maximum vs. Minimum using threshold voltage height')
-
-num = size(peaks,2);
-for j = 1:num
-   heights(j) = peaks(j)-troughs(j);
-   widths(j) = troughT(j)-peakT(j);
-end
-figure 
-for k = 1:num
-    if peaks(k) > 7*dataMedian
-        plot(widths(k), heights(k), 'ro')
-    else
-        plot(widths(k), heights(k), 'bo')
-    end
-    hold on
-end
 xlabel('spike width')
 ylabel('spike height')
 title('Cluster height vs. width using threshold voltage height')
