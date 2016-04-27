@@ -302,9 +302,9 @@ ylabel('spike height')
 title('Cluster height vs. width using threshold voltage height')
 %%
 Fs  = 15000;
-t_pc = t(samplerate*30+1:end-poststimulusc);
+t_pc = t(samplerate*intensec+1:end-poststimulusc);
 
-MAp_train = MAp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
+MAp_train = MAp_poststimulus(1:4,:);
 plot(MAp_train(1,:));
 %% min max feature
 clearvars peaks troughs peaksArray
