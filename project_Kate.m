@@ -85,7 +85,7 @@ plot(MAp_train(1,:));
 
 %% min max feature
 
-[peaks, troughs,  peakT, troughT] = extractFeatures_threshold(MAp_train)
+[peaks, troughs,  peakT, troughT] = extractFeatures_threshold(MAp_train);
 figure
 peaks = [];
 troughs = [];
@@ -99,6 +99,7 @@ ylabel('Spike Maximum (\muV)')
 title('Cluster Maximum vs. Minimum using threshold voltage')
 
 %% height
+MAp_train = MAp_poststimulus;
 [peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
 num = size(peaks,2);
 for j = 1:num
