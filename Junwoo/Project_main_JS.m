@@ -130,7 +130,7 @@ MHp_train_poststimulus = MHp_poststimulus(1:4,samplerate*30+1:end-poststimulusc)
 MAp_train_intense = MAp_intense(1:4,:);
 MHp_train_intense = MHp_intense(1:4,:);
 
-dataInterest = MAp_train_poststimulus;
+dataInterest = MAp_train_baseline;
 [peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 dataMedian = 0;
 for m = 1:4
