@@ -81,7 +81,7 @@ display(sprintf('Instant:  %4.2f',positions(COL)))
 a = figure(4); waveletstuff = VideoWriter('Propagation','MPEG-4');
 open(waveletstuff);
 % Define the form to detect.
-for jj = 1:3000
+for jj = 1:300
 FS = 15000;
 F = MAp_poststimulus(1,3053:3181);
 
@@ -132,6 +132,12 @@ positions = (0:lenSIG-1)*stepSIG;
 % fprintf('Instant 1:  %4.2f\n',positions(round(middle)))
 % fprintf('Instant 2:  %4.2f\n',positions(round(middle2)))
 end
+
+
+
+
+
+
 
 
 
