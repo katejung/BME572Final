@@ -63,13 +63,12 @@ for m = 1:1
     dataMedian = dataMedian + median(abs(dataInterest(m,:))/0.6745);
 end
 dataMedian = dataMedian/4;
-window = 40;
+window = 20;
 data = nan(size(peakT,2),window);
 for i = 1:size(data,1)
-    data(i,:) = dataInterest((peakT - 19):(peakT + 20));
-end
-[COEFFICIENT, SCORE, LATENT] = pca(data);
-plot(data*COEFFICIENT(:,1),data*COEFFICIENT(:,2));
+    data(i,:) = dataInterest((peakT - 20):peakT + 20
+[COEFFICIENT, SCORE, LATENT] = pca(dataInterest);
+plot(COEFFICIENT(:,1:2)*data);
 % K =2;% number of principal Comonents
 % 
 % X(:,1) = troughs';
