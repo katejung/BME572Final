@@ -300,13 +300,22 @@ title('Spike Alignment with PCA classification')
 
 
 %% Oscillation
+MAp_train_baseline = MAp_baseline(1:4,:);
+MHp_train_baseline = MHp_baseline(1:4,:);
+MAp_train_poststimulus = MAp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
+MHp_train_poststimulus = MHp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
+MAp_train_intense = MAp_intense(1:4,:);
+MHp_train_intense = MHp_intense(1:4,:);
 
+dataInterest = MAp_train_baseline;
+[peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 % Find LFP of baseline
 peakTime_trial = validPeakLocCell{1,1};
 peak_trial = validPeakCell{1,1};
 ApeakI = Apeak_index{1,1};
 BpeakI = Bpeak_index{1,1};
 
+figure(1)
 plot(peakTime_trial(ApeakI),ones(size(ApeakI,1),1)*1.2,'.');
 hold on
 plot(peakTime_trial(BpeakI),ones(size(BpeakI,1),1),'.');
@@ -315,14 +324,20 @@ plot(peakTime_trial(BpeakI),ones(size(BpeakI,1),1),'.');
 % Summation of multiple neurons firing
 
 plot(peakTime_trial,ones(1,size(peakTime_trial,2))*3,'.')
-axis([1,max(peakTime_trial), 0, 5]);
+% axis([1,max(peakTime_trial), 0, 5]);
 width_1 = widths(1:length(validPeakLocCell{1,1}));
-for i = length(width_1)
-    LFP{i,:} = normpdf(peakTime_trial-width_1(i):peakTime_trial+width_1(i));
-    plot((peakTime_trial-width_1(i):peakTime_trial+width_1(i)),LFP{i,:})
+for i = 1:length(width_1)
+    LFP = zeros(1:length(dataInterest);
+    LFP_temp{i,1} = peak_trial(i)*normpdf(peakTime_trial(i)-width_1(i)/0.32:peakTime_trial(i)+width_1(i)/0.32,peakTime_trial(i),width_1(i));
+    LFP_norm{i,1} = LFP{i,1}/max(LFP{i,1});
+    
+    plot((peakTime_trial(i)-width_1(i)/0.32:peakTime_trial(i)+width_1(i)/0.32),LFP_norm{i,:})
 end
-
-
+figure(2);
+for i = 1 : length(width_1)
+    plot((peakTime_trial(i)-width_1(i)/0.32:peakTime_trial(i)+width_1(i)/0.32),LFP{i,:})
+    hold on
+end
 
 
 
