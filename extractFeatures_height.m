@@ -1,4 +1,4 @@
-function [peaks, troughs, peakT, troughT] = extractFeatures_height(data)
+function [peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(data)
 arrayLength= size(data, 2);
 numset = size(data, 1);
 troughsArrayA = [];
@@ -80,16 +80,5 @@ for i= 1:numset
     validPeakLocCell{i,1}= validPeakLoc;
     validTroughCell{i,1} = validTrough;
     validTroughLocCell{i,1} = validTroughLoc;
-end
-
-peaks = [];
-troughs = [];
-peakT = [];
-troughT = [];
-for i = 1:numset
-    peaks = [peaks validPeakCell{i,1}];
-    troughs = [troughs validTroughCell{i,1}];
-    peakT = [peakT validPeakLocCell{i,1}];
-    troughT = [troughT validTroughLocCell{i,1}];
 end
 

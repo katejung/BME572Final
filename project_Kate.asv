@@ -143,12 +143,11 @@ for i = 1:4
     trough_trial = validTroughCell{i,1};
     data_trial = dataInterest(i,:);
     for j  = 1:size(peakTime_trial,2)
-        if peakTime_trial(j)+44 < size(peakTime_trial,2)
+        if peakTim
         if peak_trial(j) > 7*dataMedian 
             plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'b');
         else
              plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'r');
-        end
         end
     end
     hold on  
