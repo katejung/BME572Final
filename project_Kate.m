@@ -105,6 +105,11 @@ dataInterest = MAp_train_poststimulus;
 [peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 %%
 
+<<<<<<< HEAD
+=======
+[peaks, troughs,  peakT, troughT] = extractFeatures_threshold(MAp_train);
+figure
+>>>>>>> origin/master
 peaks = [];
 troughs = [];
 peakT = [];
@@ -115,10 +120,21 @@ for i = 1:4
     peakT = [peakT validPeakLocCell{i,1}];
     troughT = [troughT validTroughLocCell{i,1}];
 end
+<<<<<<< HEAD
 % for k = 1:4
 %     peak_trial = validPeakCell{i,1};
 %     for l = 1:size(peak_trial, 2)
 %         if peak_trial(l) 
+=======
+scatter(troughs,peaks)
+xlabel('Spike Minimum (\muV)')
+ylabel('Spike Maximum (\muV)')
+title('Cluster Maximum vs. Minimum using threshold voltage')
+
+%% height
+MAp_train = MAp_poststimulus;
+[peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
+>>>>>>> origin/master
 num = size(peaks,2);
 for j = 1:num
     heights(j) = peaks(j)-troughs(j);
