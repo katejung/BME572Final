@@ -101,37 +101,35 @@ plot(MHp_train_poststimulus(1,:))
 %% height
 clc
 clearvars -except MAp_train_baseline MHp_train_baseline MAp_train_poststimulus MHp_train_poststimulus MAp_train_intense MHp_train_intense
-dataInterest = MAp_train_poststimulus;
+dataInterest = MHp_train_baseline;
 [peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 %%
-
-[peaks, troughs,  peakT, troughT] = extractFeatures_threshold(MAp_train);
-figure
-peaks = [];
-troughs = [];
-peakT = [];
-troughT = [];
-for i = 1:4
-    peaks = [peaks validPeakCell{i,1}];
-    troughs = [troughs validTroughCell{i,1}];
-    peakT = [peakT validPeakLocCell{i,1}];
-    troughT = [troughT validTroughLocCell{i,1}];
-end
-
-% for k = 1:4
-%     peak_trial = validPeakCell{i,1};
-%     for l = 1:size(peak_trial, 2)
-%         if peak_trial(l) 
-
-scatter(troughs,peaks)
-xlabel('Spike Minimum (\muV)')
-ylabel('Spike Maximum (\muV)')
-title('Cluster Maximum vs. Minimum using threshold voltage')
+% 
+% [peaks, troughs,  peakT, troughT] = extractFeatures_threshold(dataInterest);
+% figure
+% peaks = [];
+% troughs = [];
+% peakT = [];
+% troughT = [];
+% for i = 1:4
+%     peaks = [peaks validPeakCell{i,1}];
+%     troughs = [troughs validTroughCell{i,1}];
+%     peakT = [peakT validPeakLocCell{i,1}];
+%     troughT = [troughT validTroughLocCell{i,1}];
+% end
+% 
+% % for k = 1:4
+% %     peak_trial = validPeakCell{i,1};
+% %     for l = 1:size(peak_trial, 2)
+% %         if peak_trial(l) 
+% 
+% scatter(troughs,peaks)
+% xlabel('Spike Minimum (\muV)')
+% ylabel('Spike Maximum (\muV)')
+% title('Cluster Maximum vs. Minimum using threshold voltage')
 
 %% height
-MAp_train = MAp_poststimulus;
-[peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
->>>>>>> origin/master
+[peaks, troughs, peakT, troughT] = extractFeatures_height(dataInterest);
 num = size(peaks,2);
 for j = 1:num
     heights(j) = peaks(j)-troughs(j);
