@@ -34,7 +34,7 @@ MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
 [MHp_baseline] = filtering_JS(MHp_baseline,0,0); [MHp_intense] = filtering_JS(MHp_intense,1,0); [MHp_poststimulus] = filtering_JS(MHp_poststimulus,0,0);
 MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 
-% Visualize
+%% Visualize
 fig = figure(fignum); clf(fig)
 plot(t(1+samplerate*baselinec:end),MAp_filtered,linespec{1,:},linespec2{1,:})
 xlabel('Time (s)', fontsize{2,:}); ylabel('Amplitude (arb. Units)', fontsize{2,:})
@@ -120,6 +120,76 @@ fig = figure(fignum); clf(fig)
 plot(t,MHp(1,:),linespec{1,:},linespec2{1,:});
 % axis([14.98 15 -370 -340])
 fignum = fignum  +1;
+
+
+%% Find peak
+MAp_train_baseline = MAp_baseline(1:4,:);
+MHp_train_baseline = MHp_baseline(1:4,:);
+MAp_train_poststimulus = MAp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
+MHp_train_poststimulus = MHp_poststimulus(1:4,samplerate*30+1:end-poststimulusc);
+MAp_train_intense = MAp_intense(1:4,:);
+MHp_train_intense = MHp_intense(1:4,:);
+dataInterest = MAp_train_poststimulus;
+[peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
+dataMedian = 0;
+for m = 1:4
+    dataMedian = dataMedian + median(abs(dataInterest(m,:))/0.6745);
+end
+dataMedian = dataMedian/4;
+
+% overlapping signals are not
+figure
+for i = 1:4
+    windowLength = 100;
+    peakTime_trial = validPeakLocCell{i,1};
+    peak_trial = validPeakCell{i,1};
+    trough_trial = validTroughCell{i,1};
+    data_trial = dataInterest(i,:);
+    for j  = 1:size(peakTime_trial,2)
+        if peakTime_trial(j)+44 < size(peakTime_trial,2)
+        if peak_trial(j) > 7*dataMedian 
+            plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'b');
+        else
+             plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'r');
+        end
+        end
+    end
+    hold on  
+end
+xlabel('time spike at 20 sec')
+ylabel('voltage')
+title('Spike Alignment')
+
+figure
+scatter(troughs,peaks)
+xlabel('Spike Minimum (\muV)')
+ylabel('Spike Maximum (\muV)')
+title('Cluster Maximum vs. Minimum using threshold voltage height')
+num = size(peaks,1);
+figure
+for k = 1:num
+    if peaks(k) > 7*dataMedian
+        plot(widths(k), heights(k), 'ro')
+    else
+        plot(widths(k), heights(k), 'bo')
+    end
+    hold on
+end
+
+xlabel('spike width')
+ylabel('spike height')
+title('Cluster height vs. width using threshold voltage height')
+
+% sample data
+figure
+plot(dataInterest(1,:));
+hold on
+plot(validPeakLocCell{1,1}, validPeakCell{1,1},'bo')
+hold on
+plot(validTroughLocCell{1,1}, validTroughCell{1,1},'mo')
+xlabel('time')
+ylabel('voltage')
+title('sample spike detection')
 
 
 
