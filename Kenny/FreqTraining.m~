@@ -6,8 +6,8 @@ load MAp.mat
 load MHp.mat
 
 % training = [1 3 5 7];
-training = [3];
-test = [2 4 6 8];
+training = [4];
+test = [1 3 5 7];
 
 clc;
 close all;
@@ -17,30 +17,82 @@ threshold = 0;
 start = 10;
 m = MAp;
 
-MApt = MHp(training(1),1:end);
+MApt = MAp(training(1),1:end);
 for i = 1:size(training,2)-1
-    MApt = horzcat(MApt,MAp(training(i+1),1:end));
+    MApt = vertcat(MApt,MAp(training(i+1),1:end));
 end
+
+data = MApt;
+numset = size(data,1);
+for i = 1:numset
 % Butterworth bandpass filter
 % d = designfilt('bandpassiir','FilterOrder',20, ...
 %     'HalfPowerFrequency1',300,'HalfPowerFrequency2',3000, ...
 %     'SampleRate',15000);
 % MAplp = filter(d,MApt);
-[b, a] = butter(2,[15/7500 35/7500],'bandpass');
-MAplp1 = filter(b,a,MApt);
+d = designfilt('bandpassfir', 'FilterOrder', 20, ...
+        'CutoffFrequency1',15, 'CutoffFrequency2', 35, ...
+        'SampleRate', 15000);
+    % d = designfilt('bandpassfir', 'FilterOrder', 20, ...
+    %     'CutoffFrequency1',50, 'CutoffFrequency2', 3000, ...
+    %     'SampleRate', 15000);
+    
+    % Bandstop filter around 60 is used to remove 60 Hz electronics noise
+    d1 = designfilt('bandstopfir', 'FilterOrder', 20, ...
+        'CutoffFrequency1',50, 'CutoffFrequency2', 70, ...
+        'SampleRate', 15000,'Window', 'hamming');
+    
+    % Highpass filter of 3Hz is used to remove trend
+    d2 = designfilt('highpassfir', 'FilterOrder', 20, 'CutoffFrequency', ...
+        3, 'SampleRate', 15000, 'Window', 'hamming');
 
-x1 = 32; % half the window size. Window size = 2x+1
-
+    if dealwithintense
+        if isMAp
+            sing = MAp_singularities{1,i};
+        else
+            sing = MHp_singularities{1,i};
+        end
+        % De-trend the datapoints prior to the singularity
+        [p,s,mu] = polyfit(1:sing(1)-1,data(i,1:sing(1)-1),6);
+        trend = polyval(p,1:sing(1)-1,[],mu);
+        filtered(i,1:sing(1)-1) = data(i,1:sing(1)-1) - trend;
+        
+        % De-trend the datapoints in the singularity
+        [p,s,mu] = polyfit(sing,data(i,sing),6);
+        trend = polyval(p,sing,[],mu);
+        filtered(i,sing) = data(i,sing) - trend;
+        
+        % De-trend the datapoints after the singularity
+        [p,s,mu] = polyfit(sing(end)+1:datalength,data(i,sing(end)+1:end),6);
+        trend = polyval(p,sing(end)+1:datalength,[],mu);
+        filtered(i,sing(end)+1:end) = data(i,sing(end)+1:end) - trend;
+        
+    else
+        % Remove additional trends with polynomial approximation
+        [p,s,mu] = polyfit((1:datalength),data(i,:),10);
+        trend = polyval(p,(1:datalength),[],mu);
+        filtered(i,:) = data(i,:) - trend;
+    end
+    
+    % Apply a frequency filter
+    filtered(i,:) = filtfilt(d,filtered(i,:));
+    filtered(i,:) = filtfilt(d1,filtered(i,:));
+    filtered(i,:) = filtfilt(d2,filtered(i,:));
+    
+    % Remove the DC-offset
+    MAplp1(i,:) = filtered(i,:) - mean(filtered(i,:));
+    x1 = 32; % half the window size. Window size = 2x+1
+end
 figure;
 plot(linspace(1./f,size(MAplp1,2)./f,size(MAplp1,2)),MAplp1);
 % ylim([-200 200]);
 
 %%
-figure
-plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2)),MAplp);
-hold on
-plot(linspace(1./f,size(MAplp1(1:150000),2)./f,size(MAplp1(1:150000),2)),MAplp1(1:150000),'r');
-hold off
+% figure
+% plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2)),MAplp);
+% hold on
+% plot(linspace(1./f,size(MAplp1(1:150000),2)./f,size(MAplp1(1:150000),2)),MAplp1(1:150000),'r');
+% hold off
 
 %%
 figure;
@@ -49,7 +101,7 @@ plot(linspace(1./f,size(MAplp1,2)./f,size(MAplp1,2)),MAplp1,'r');
 
 %% Find peaks using Kate's code + modification
 f = 15000;
-dataInterest = MAplp1(f*11.5:end);
+dataInterest = MAplp1(:,f*11.5 + 1:end);
 % [validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 [peaks, troughs, peakT, troughT] = extractFeatures_height2(dataInterest);
 num = size(peaks,2);
@@ -60,15 +112,35 @@ end
 
 dataMedian = 0;
 for m = 1:1
-    dataMedian = dataMedian + median(abs(dataInterest(m,:))/0.6745);
+    dataMedian = dataMedian + median(abs(dataInterest(m,:)));
 end
 dataMedian = dataMedian/4;
-window = 20;
+window = 64;
 data = nan(size(peakT,2),window);
 for i = 1:size(data,1)
-    data(i,:) = dataInterest((peakT - 20):peakT + 20
-[COEFFICIENT, SCORE, LATENT] = pca(dataInterest);
-plot(COEFFICIENT(:,1:2)*data);
+    data(i,:) = dataInterest((peakT - 31):(peakT + 32));
+end
+[COEFFICIENT, SCORE, LATENT] = pca(data);
+%%
+
+scatter(SCORE(:,1),SCORE(:,2));
+hold on;
+%%
+W = LDA(SCORE,['x1','x2']);
+x = linspace(0,10);
+y = W(1,1)./W(1,3) - W(1,2).*x./W(1,3);
+plot(x,y);
+hold off;
+
+Xh1_PCA=-35:0.5:5;
+Yh1_PCA = Xh1_PCA.*SCORE(2,1)./SCORE(1,1);
+% calculated 2nd PC line
+Xh2_PCA =-35:0.5:5;
+Yh2_PCA = Xh2_PCA.*SCORE(2,2)./SCORE(1,2
+
+
+plot(X(:,1), X(:,2), 'b^', Xh1_PCA,Yh1_PCA,'g-',Xh2_PCA, Yh2_PCA, 'r-')
+
 % K =2;% number of principal Comonents
 % 
 % X(:,1) = troughs';
