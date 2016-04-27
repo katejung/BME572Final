@@ -1,0 +1,82 @@
+% Project_main_JS.m
+clear all; clc;
+% Load data
+load MAp.mat;
+load MHp.mat;
+
+%% Plotting settings
+linespec = {'linestyle' '-';'linestyle' ':';'linestyle' '-.';'linestyle' '--'}; % Line specs for gray-scale
+markerspec = {'linestyle' 'o';'linestyle' '*';'linestyle' '+';'linestyle' '.'}; % Marker specs for gray-scale
+color = {'color' 'blue'; 'color' 'red'; 'color' 'green'; ...
+    'color' 'cyan'; 'color' 'black'; 'color' 'yellow'};
+% fontsize{1,:} for title, fontsize{2,:} for axis, fontsize{3,:} for legend
+fontsize = {'Fontsize' 13 'Fontweight' 'bold'; ...
+    'Fontsize', 10, 'Fontweight', 'bold'; ...
+    'Fontsize', 11, 'Fontweight', 'bold'};
+% linespec2{1,:} for line, linespec2{2,:} for marker
+linespec2 = {'linewidth' 2; 'MarkerSize' 6};
+% Count the number of figures created
+fignum = 1;
+
+%% Preprosess the data
+% preprocess parameters
+samplerate = 15000;
+t = 0:(1/samplerate):60; t = t(1:end-1);
+baselinec = 0; % Remove first few seconds
+intensec = 11.5; % Cutoff for the intense section
+poststimulusc = 0; % Cutoff for the post-stimulus section
+
+% Preprocess the data
+[MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp,baselinec,intensec,poststimulusc);
+[MAp_baseline] = filtering_JS(MAp_baseline,0,1); [MAp_intense] = filtering_JS(MAp_intense,1,1); [MAp_poststimulus] = filtering_JS(MAp_poststimulus,0,1);
+MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
+[MHp_baseline,MHp_intense,MHp_poststimulus] = compartmentize_JS(MHp,baselinec,intensec,poststimulusc);
+[MHp_baseline] = filtering_JS(MHp_baseline,0,0); [MHp_intense] = filtering_JS(MHp_intense,1,0); [MHp_poststimulus] = filtering_JS(MHp_poststimulus,0,0);
+MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
+
+%%
+MAp_train = MAp_baseline(1,:);
+[peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
+%%
+num = size(peaks,2);
+for j = 1:num
+   heights(j) = peaks(j)-troughs(j);
+   widths(j) = troughT(j)-peakT(j);
+end
+
+winsize = 64;
+C = nan(size(peakT,2),winsize);
+data = [];
+for i = 1:size(peakT,2)
+%     [c,L] = wavedec(MAp_baseline(1,(peakT(i) - 19):(peakT(i) + 44)),4,'haar');
+%     C(i,:) = c;
+    data = [data; MAp_train(peakT(i)-19:peakT(i)+44)];
+    if mod(i,round((size(peakT,2))/100)) == 0
+        fprintf('%d\n',round(100*i/size(peakT,2)));
+    end
+end
+
+%%
+% C1 = nan(size(peakT,2),1);
+% C2 = nan(size(peakT,2),1);
+
+[COEFF, SCORE, LATENT]  = pca(data);
+for i = 1:size(SCORE,1)
+    if SCORE(i,1) < 0
+        C1(i) = peakT(i);
+    else
+        C2(i) = peakT(i);
+    end
+end
+C1 = C1(~isnan(C1));
+C2 = C2(~isnan(C2));
+
+%%
+% for i = 1:4
+%     plot(MAp_train(i,:),'b');
+%     hold on;
+% end
+% scatter(peakT(find(C1 == peakT')),peaks(find(C1 == peakT')),50,'g');
+% scatter(peakT(find(C2 == peakT')),peaks(find(C2 == peakT')),50,'r');
+% 
+% hold off;

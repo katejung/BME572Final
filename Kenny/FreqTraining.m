@@ -1,6 +1,6 @@
-clc;
-clear all;
-close all;
+% clc;
+% clear all;
+% close all;
 
 load MAp.mat
 load MHp.mat
@@ -14,20 +14,35 @@ threshold = 0;
 start = 10;
 m = MAp;
 
-MApt = MAp(training(1),f*start:end);
+MApt = MHp(training(1),1:end);
 for i = 1:size(training,2)-1
-    MApt = horzcat(MApt,MAp(training(i+1),f*start:end));
+    MApt = horzcat(MApt,MAp(training(i+1),1:end));
 end
 % Butterworth bandpass filter
-d = designfilt('bandpassiir','FilterOrder',20, ...
-    'HalfPowerFrequency1',300,'HalfPowerFrequency2',3000, ...
-    'SampleRate',15000);
-MAplp = filter(d,MApt);
-% [b, a] = butter(2,[300/7500 3000/7500],'bandpass');
-% MAplp = filter(b,a,MApt);
+% d = designfilt('bandpassiir','FilterOrder',20, ...
+%     'HalfPowerFrequency1',300,'HalfPowerFrequency2',3000, ...
+%     'SampleRate',15000);
+% MAplp = filter(d,MApt);
+[b, a] = butter(2,[15/7500 35/7500],'bandpass');
+MAplp1 = filter(b,a,MApt);
 
 x1 = 32; % half the window size. Window size = 2x+1
 
 figure;
+plot(linspace(1./f,size(MAplp1,2)./f,size(MAplp1,2)),MAplp1);
+% ylim([-200 200]);
+
+%%
+figure
 plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2)),MAplp);
-ylim([-200 200]);
+hold on
+plot(linspace(1./f,size(MAplp1(1:150000),2)./f,size(MAplp1(1:150000),2)),MAplp1(1:150000),'r');
+hold off
+
+%%
+figure;
+plot(linspace(1./f,size(MAplp1,2)./f,size(MAplp1,2)),MAplp1,'r');
+
+
+%% Find peaks using Kate's code + modification
+

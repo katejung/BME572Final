@@ -35,15 +35,50 @@ MAp_filtered = [MAp_baseline MAp_intense MAp_poststimulus];
 MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 
 %%
+MAp_train = MHp_baseline(1,:);
+[peaks, troughs, peakT, troughT] = extractFeatures_height(MAp_train);
+%%
+num = size(peaks,2);
+for j = 1:num
+   heights(j) = peaks(j)-troughs(j);
+   widths(j) = troughT(j)-peakT(j);
+end
+
 winsize = 64;
-C = nan(size(MAp_baseline,2)-winsize +1,winsize);
-for i = 1:size(MAp_baseline,2) - winsize + 1
-    [c,L] = wavedec(MAp_baseline(1,i:i+63),4,'haar');
+C = nan(size(peakT,2),winsize);
+for i = 1:size(peakT,2)
+    [c,L] = wavedec(MAp_train(1,i:i+63),4,'db5');
     C(i,:) = c;
-    if mod(i,round((size(MAp_baseline,2)-winsize+1)/100)) == 0
-        fprintf('%d\n',round(100*i/(size(MAp_baseline,2)-winsize+1)));
+    data = [data; MAp_train(i:i+63)];
+    if mod(i,round((size(peakT,2))/100)) == 0
+        fprintf('%d\n',round(100*i/size(MAp_train,2)));
     end
 end
 
 %%
-plot(MAp_poststimulus(1,:));
+C1 = nan(size(peakT,2),1);
+C2 = nan(size(peakT,2),1);
+
+[COEFF, SCORE, LATENT]  = pca(data);
+for i = 1:size(SCORE,1)
+    if SCORE(i,1) < 0
+        C1(i) = peakT(i);
+    else
+        C2(i) = peakT(i);
+    end
+end
+% C1 = C1(~isnan(C1));
+% C2 = C2(~isnan(C2));
+
+%%
+% for i = 1:4
+%     plot(MAp_train(i,:),'b');
+%     hold on;
+% end
+plot(MAp_train)
+hold on;
+scatter(peakT(find(C1 == peakT')),peaks(find(C1 == peakT')),50,'g');
+scatter(peakT(find(C2 == peakT')),peaks(find(C2 == peakT')),50,'r');
+hold off;
+% 
+% hold off;
