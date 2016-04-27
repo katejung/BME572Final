@@ -6,7 +6,7 @@ load MAp.mat
 load MHp.mat
 
 % training = [1 3 5 7];
-training = [3];
+training = [1 2 3 4];
 test = [2 4 6 8];
 
 samplerate = 15000;
@@ -20,9 +20,9 @@ threshold = 0;
 start = 11.5;
 m = MAp;
 
-MApt = MAp(training(1),f*start+1:end);
+MApt = MAp(training(1),(f*20+1):(f*21));
 for i = 1:size(training,2)-1
-    MApt = horzcat(MApt,MAp(training(i+1),f*start+1:end));
+    MApt = horzcat(MApt,MAp(training(i+1),(f*20+1):(f*21)));
 end
 % Butterworth bandpass filter
 [MAp_baseline,MAp_intense,MAp_poststimulus] = compartmentize_JS(MAp,baselinec,intensec,poststimulusc);
@@ -36,7 +36,7 @@ data = MAp_poststimulus;
 dealwithintense =0;
 isMAp = 1;
 d = designfilt('bandpassfir', 'FilterOrder', 20, ...
-    'CutoffFrequency1',50, 'CutoffFrequency2', 3000, ...
+    'CutoffFrequency1',10, 'CutoffFrequency2', 35, ...
     'SampleRate', 15000);
 
 % Bandstop filter around 60 is used to remove 60 Hz electronics noise
@@ -114,7 +114,7 @@ MAp_poststimulus1 = filtered;
     dealwithintense =0;
     isMAp = 1;
     d = designfilt('bandpassfir', 'FilterOrder', 20, ...
-        'CutoffFrequency1',15, 'CutoffFrequency2', 35, ...
+        'CutoffFrequency1',10, 'CutoffFrequency2', 40, ...
         'SampleRate', 15000);
     % d = designfilt('bandpassfir', 'FilterOrder', 20, ...
     %     'CutoffFrequency1',50, 'CutoffFrequency2', 3000, ...
@@ -199,7 +199,7 @@ locs = zeros(1,size(MAplp,2));
 % (max(MAplp(i-x1:i+x1)) - min(MAplp(i-x1:i+x1))) >= 20
 
 %  && (max(MAplp(i-x1:i+x1)) - min(MAplp(i-x1:i+x1)) > 10)
-x1 = 16; % half the window size. Window size = 2x+1
+x1 = 32; % half the window size. Window size = 2x+1
 for i = 1+x1:size(MAplp,2)-x1
     if (max(MAplp(i-x1:i+x1)) == MAplp(i))
         pks(i) = MAplp(i);
@@ -208,17 +208,31 @@ for i = 1+x1:size(MAplp,2)-x1
 end
 pks = pks(pks~=0);
 locs = locs(locs~=0);
-thrclass = pks>0;
+thrclass = pks>4.6214;
 pkst = pks.*(thrclass);
 pkst = pkst(pkst~=0);
 locst = locs.*(thrclass);
 locst = locst(locst~=0);
+%%
 figure;
 plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2)),MAplp);
 ylim([-200 200]);
 hold on;
-plot(locst./f,pkst,'.');
+class1 = [];
+class2 = [];
+for i = 1:size(locst,2)
+    if MAplp(locst(i)) > 4.62
+        class1 = [class1; [locst(i)./f pkst(i)]];
+        hold on;
+    else
+        class2 = [class2; [locst(i)./f pkst(i),]];
+        hold on;
+    end
+end
 hold off;
+title('sample spike detection');
+xlabel('time (s)');
+ylabel('voltage');
 
 %% Histogram idea to separate oscillations from others (possible use)
 % histogramsize = 1;
@@ -231,12 +245,23 @@ hold off;
 % plot(amp,count)
 
 %%
-x2 = 16; % Size of window of data
-data = zeros(size(locst,2),2*x2+1);
+x2 = x1; % Size of window of data
+data = zeros(size(locst,2),2*x2+2);
 for i = 1:size(locst,2)
-    data(i,:) = MAplp((locst(i) - x2):(locst(i) + x2));
+    if MAplp(locst(i)) > 4.62
+        data(i,:) = [MAplp((locst(i) - x2):(locst(i) + x2)) 1];
+        plot(MAplp((locst(i) - x2):(locst(i) + x2)),'b');
+        hold on;
+    else
+        data(i,:) = [MAplp((locst(i) - x2):(locst(i) + x2)) 2];
+        plot(MAplp((locst(i) - x2):(locst(i) + x2)),'r');
+        hold on;
+    end
 end
-
+title('Spike Alignment');
+xlabel('time spike at 20 sec');
+ylabel('voltage');
+%%
 [COEFF, SCORE, LATENT] = pca(data);
 figure;
 plot(LATENT(1:x2+1));
@@ -249,19 +274,19 @@ scatter(pcadata(:,1),pcadata(:,2));
 % scatter3(pcadata(:,1),pcadata(:,2),pcadata(:,3));
 
 %%
-figure;
-hold on;
+% figure;
+% hold on;
+% % for i = 1:size(data,1)
 % for i = 1:size(data,1)
-for i = 1:size(data,1)
-plot(data(i,:),'b');
-end
-hold off;
-
-%%
-plot(C(:,1),'r');
-hold on;
-plot(MAp_baseline(1,:),'b');
-hold off;
-
-%%
-plot(C(:,1),C(:,2),'.')
+% plot(data(i,:),'b');
+% end
+% hold off;
+% 
+% %%
+% plot(C(:,1),'r');
+% hold on;
+% plot(MAp_baseline(1,:),'b');
+% hold off;
+% 
+% %%
+% plot(C(:,1),C(:,2),'.')

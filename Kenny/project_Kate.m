@@ -102,7 +102,7 @@ plot(MHp_train_poststimulus(1,:))
 clc
 clearvars -except MAp_train_baseline MHp_train_baseline MAp_train_poststimulus MHp_train_poststimulus MAp_train_intense MHp_train_intense
 dataInterest = MHp_train_baseline;
-[peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
+[validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 %%
 % 
 % [peaks, troughs,  peakT, troughT] = extractFeatures_threshold(dataInterest);
@@ -132,8 +132,8 @@ dataInterest = MHp_train_baseline;
 [peaks, troughs, peakT, troughT] = extractFeatures_height(dataInterest);
 num = size(peaks,2);
 for j = 1:num
-    heights(j) = peaks(j)-troughs(j);
-    widths(j) = troughT(j)-peakT(j);
+    heights(j) = peaks{j}-troughs{j};
+    widths(j) = troughT{j}-peakT{j};
 end
 
 dataMedian = 0;
@@ -146,28 +146,29 @@ dataMedian = dataMedian/4;
 
 %% spike line up
 % overlapping signals are not
-figure
-for i = 1:4
+figure(1);
+% for i = 1:4
     windowLength = 100;
-    peakTime_trial = validPeakLocCell{i,1};
-    peak_trial = validPeakCell{i,1};
-    trough_trial = validTroughCell{i,1};
-    data_trial = dataInterest(i,:);
-    for j  = 1:size(peakTime_trial,2)
-        if peakTime_trial(j)+44 < size(peakTime_trial,2)
-        if peak_trial(j) > 7*dataMedian 
-            plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'b');
+%     peakTime_trial = validPeakLocCell(1,i);
+%     peak_trial = validPeakCell(1,i);
+%     trough_trial = validTroughCell(1,i);
+%     data_trial = dataInterest(i,:);
+for i  = 1:size(peakT,2)
+    if peakT(i)+44 < size(peakT(i),2)
+        if peaks(i) > 20
+            set(gca,'Ydata',dataInterest((peakT(i)-19):(peakT(i)+44)));
         else
-             plot(data_trial(peakTime_trial(j)-19:peakTime_trial(j)+44),'r');
-        end
+            set(gca,'Ydata',dataInterest((peakT(i)-19):(peakT(i)+44)));
         end
     end
+%     end
     hold on  
 end
 xlabel('time spike at 20 sec')
 ylabel('voltage')
 title('Spike Alignment')
-
+hold off
+%%
 figure
 scatter(troughs,peaks)
 xlabel('Spike Minimum (\muV)')
@@ -175,14 +176,14 @@ ylabel('Spike Maximum (\muV)')
 title('Cluster Maximum vs. Minimum using threshold voltage height')
 num = size(peaks,1);
 figure
-for k = 1:num
-    if peaks(k) > 7*dataMedian
-        plot(widths(k), heights(k), 'ro')
-    else
-        plot(widths(k), heights(k), 'bo')
-    end
-    hold on
-end
+% for k = 1:num
+%     if peaks(k) > 7*dataMedian
+%         plot(widths(k), heights(k), 'ro')
+%     else
+%         plot(widths(k), heights(k), 'bo')
+%     end
+%     hold on
+% end
 
 xlabel('spike width')
 ylabel('spike height')
@@ -192,9 +193,9 @@ title('Cluster height vs. width using threshold voltage height')
 figure
 plot(dataInterest(1,:));
 hold on
-plot(validPeakLocCell{1,1}, validPeakCell{1,1},'bo')
+plot(validPeakLocCell(1,1), validPeakCell(1,1),'bo')
 hold on
-plot(validTroughLocCell{1,1}, validTroughCell{1,1},'mo')
+plot(validTroughLocCell(1,1), validTroughCell(1,1),'mo')
 xlabel('time')
 ylabel('voltage')
 title('sample spike detection')
