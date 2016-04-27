@@ -301,7 +301,6 @@ title('Spike Alignment with PCA classification')
 
 %% Oscillation
 
-[peakinterval,validPeakCell, validTroughCell, validPeakLocCell, validTroughLocCell] = extractFeatures_height(dataInterest);
 % Find LFP of baseline
 peakTime_trial = validPeakLocCell{1,1};
 peak_trial = validPeakCell{1,1};
@@ -316,12 +315,11 @@ plot(peakTime_trial(BpeakI),ones(size(BpeakI,1),1),'.');
 % Summation of multiple neurons firing
 
 plot(peakTime_trial,ones(1,size(peakTime_trial,2))*3,'.')
-% axis([1,max(peakTime_trial), 0, 5]);
+axis([1,max(peakTime_trial), 0, 5]);
 width_1 = widths(1:length(validPeakLocCell{1,1}));
-for i = 1:length(width_1)
-    LFP{i,1} = normpdf(peakTime_trial(i)-width_1(i)/0.32:peakTime_trial(i)+width_1(i)/0.32,peakTime_trial(i),width_1(i));
-    LFP{i,1} = LFP{i,1}/max(LFP{i,1});
-    plot((peakTime_trial(i)-width_1(i)/0.32:peakTime_trial(i)+width_1(i)/0.32),LFP{i,:})
+for i = length(width_1)
+    LFP{i,:} = normpdf(peakTime_trial-width_1(i):peakTime_trial+width_1(i));
+    plot((peakTime_trial-width_1(i):peakTime_trial+width_1(i)),LFP{i,:})
 end
 
 
