@@ -32,7 +32,7 @@ end
 % [MHp_baseline] = filtering_JS(MHp_baseline,0,0); [MHp_intense] = filtering_JS(MHp_intense,1,0); [MHp_poststimulus] = filtering_JS(MHp_poststimulus,0,0);
 % MHp_filtered = [MHp_baseline MHp_intense MHp_poststimulus];
 %%
-data = MAp_baseline;
+data = MAp_poststimulus;
 dealwithintense =0;
 isMAp = 1;
 d = designfilt('bandpassfir', 'FilterOrder', 20, ...
@@ -214,7 +214,7 @@ pkst = pkst(pkst~=0);
 locst = locs.*(thrclass);
 locst = locst(locst~=0);
 figure;
-plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2))+11.5,MAplp);
+plot(linspace(1./f,size(MAplp,2)./f,size(MAplp,2)),MAplp);
 ylim([-200 200]);
 hold on;
 plot(locst./f,pkst,'.');
@@ -231,7 +231,6 @@ hold off;
 % plot(amp,count)
 
 %%
-close all;
 x2 = 16; % Size of window of data
 data = zeros(size(locst,2),2*x2+1);
 for i = 1:size(locst,2)
@@ -254,7 +253,7 @@ figure;
 hold on;
 % for i = 1:size(data,1)
 for i = 1:size(data,1)
-plot(data(i,:));
+plot(data(i,:),'b');
 end
 hold off;
 
