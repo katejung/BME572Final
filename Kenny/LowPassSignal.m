@@ -93,3 +93,12 @@ for i = 1:size(data,1)
 plot(data(i,:));
 end
 hold off;
+
+%%
+plot(C(:,1),'r');
+hold on;
+plot(MAp_baseline(1,:),'b');
+hold off;
+
+%%
+plot(C(:,1),C(:,2),'.')
